@@ -1,4 +1,5 @@
-//  Copyright (c) 2011 Stanislaw Adaszewski, portions (c) 2019 Tomas Pavlicek
+//  Copyright (c) 2011 Stanislaw Adaszewski, portions (c) 2019 Tomas Pavlicek,
+//  (c) 2021 Chris Hennes
 //  All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
@@ -213,6 +214,7 @@ QXmlName QDomNodeModel::name(const QXmlNodeModelIndex &ni) const
 QVector<QXmlName> QDomNodeModel::namespaceBindings(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
+    bool xmlNamespaceDefined = false;
 
     QVector<QXmlName> result;
     while (!n.isNull())
@@ -238,11 +240,25 @@ QVector<QXmlName> QDomNodeModel::namespaceBindings(const QXmlNodeModelIndex &ni)
 
                 if (j >= result.size()) {
                     result.append(QXmlName(m_Pool, QString::fromUtf8("xmlns"), attrs.item(i).nodeValue(), p));
+
+                    if (p == QString::fromUtf8("xml")) {
+                        xmlNamespaceDefined = true;
+                    }
                 }
              }
         }
 
         n = n.parentNode();
+    }
+
+    // STANDARD: Namespaces in XML 1.0 - Declaring Namespaces
+    // https://www.w3.org/TR/xml-names/#ns-decl
+    // "The prefix xml is by definition bound to the namespace name http://www.w3.org/XML/1998/namespace.
+    //  It MAY, but need not, be declared, and MUST NOT be bound to any other namespace name. Other prefixes
+    //  MUST NOT be bound to this namespace name, and it MUST NOT be declared as the default namespace."
+    if (!xmlNamespaceDefined) {
+        result.append(QXmlName(m_Pool, QString::fromUtf8("xmlns"),
+                      QString::fromUtf8("http://www.w3.org/XML/1998/namespace"), QString::fromUtf8("xml")));
     }
 
     return result;
