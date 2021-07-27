@@ -9,30 +9,28 @@ class QDomNodeModel: public QAbstractXmlNodeModel
 {
 public:
     QDomNodeModel(QXmlNamePool, QDomDocument, bool parsedReadOnly = false);
-    QUrl baseUri ( const QXmlNodeModelIndex & n ) const;
-    QXmlNodeModelIndex::DocumentOrder compareOrder ( const QXmlNodeModelIndex & ni1, const QXmlNodeModelIndex & ni2 ) const;
-    QUrl documentUri ( const QXmlNodeModelIndex & n ) const;
-    QXmlNodeModelIndex elementById ( const QXmlName & id ) const;
-    QXmlNodeModelIndex::NodeKind kind ( const QXmlNodeModelIndex & ni ) const;
-    QXmlName name ( const QXmlNodeModelIndex & ni ) const;
-    QVector<QXmlName> namespaceBindings ( const QXmlNodeModelIndex & n ) const;
-    QVector<QXmlNodeModelIndex> nodesByIdref ( const QXmlName & idref ) const;
-    QXmlNodeModelIndex root ( const QXmlNodeModelIndex & n ) const;
-    QSourceLocation    sourceLocation ( const QXmlNodeModelIndex & index ) const;
-    QString    stringValue ( const QXmlNodeModelIndex & n ) const;
-    QVariant typedValue ( const QXmlNodeModelIndex & node ) const;
+    virtual QUrl baseUri(const QXmlNodeModelIndex &ni) const;
+    virtual QXmlNodeModelIndex::DocumentOrder compareOrder(const QXmlNodeModelIndex &ni1, const QXmlNodeModelIndex &ni2 ) const;
+    virtual QUrl documentUri(const QXmlNodeModelIndex &ni) const;
+    virtual QXmlNodeModelIndex elementById(const QXmlName &id) const;
+    virtual QXmlNodeModelIndex::NodeKind kind(const QXmlNodeModelIndex &ni) const;
+    virtual QXmlName name(const QXmlNodeModelIndex &ni) const;
+    virtual QVector<QXmlName> namespaceBindings(const QXmlNodeModelIndex &ni) const;
+    virtual QVector<QXmlNodeModelIndex> nodesByIdref(const QXmlName &idref) const;
+    virtual QXmlNodeModelIndex root(const QXmlNodeModelIndex &ni) const;
+    virtual QString stringValue(const QXmlNodeModelIndex &ni) const;
+    virtual QVariant typedValue(const QXmlNodeModelIndex &ni) const;
 
 public:
-    QXmlNodeModelIndex fromDomNode (const QDomNode&) const;
-    QDomNode toDomNode(const QXmlNodeModelIndex &) const;
-    QVector<QDomNode> path(const QDomNode&) const;
-    int childIndex(const QDomNode&) const;
+    virtual QXmlNodeModelIndex fromDomNode(const QDomNode &n) const;
+    virtual QDomNode toDomNode(const QXmlNodeModelIndex &ni) const;
+    virtual QVector<QDomNode> path(const QDomNode &n) const;
+    virtual int childIndex(const QDomNode &n) const;
 
 protected:
-    QVector<QXmlNodeModelIndex> attributes ( const QXmlNodeModelIndex & element ) const;
-    QXmlNodeModelIndex nextFromSimpleAxis ( SimpleAxis axis, const QXmlNodeModelIndex & origin) const;
+    virtual QVector<QXmlNodeModelIndex> attributes(const QXmlNodeModelIndex &element) const;
+    virtual QXmlNodeModelIndex nextFromSimpleAxis(SimpleAxis axis, const QXmlNodeModelIndex &origin) const;
 
-private:
     mutable QXmlNamePool m_Pool;
     mutable QDomDocument m_Doc;
     bool m_ReadOnly;

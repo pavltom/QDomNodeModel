@@ -36,7 +36,7 @@
 class PrivateDomNodeWrapper: public QDomNode
 {
 public:
-    PrivateDomNodeWrapper(const QDomNode& other):
+    PrivateDomNodeWrapper(const QDomNode &other):
         QDomNode(other)
     {
     }
@@ -46,7 +46,7 @@ public:
     {
     }
 
-    QDomNodePrivate* getImpl()
+    QDomNodePrivate *getImpl()
     {
         return impl;
     }
@@ -55,10 +55,9 @@ public:
 QDomNodeModel::QDomNodeModel(QXmlNamePool pool, QDomDocument doc, bool parsedReadOnly):
     m_Pool(pool), m_Doc(doc), m_ReadOnly(parsedReadOnly)
 {
-
 }
 
-QUrl QDomNodeModel::baseUri (const QXmlNodeModelIndex &) const
+QUrl QDomNodeModel::baseUri(const QXmlNodeModelIndex &) const
 {
     // TODO: Not implemented.
     return QUrl();
@@ -66,35 +65,39 @@ QUrl QDomNodeModel::baseUri (const QXmlNodeModelIndex &) const
 
 #include <QDebug>
 
-QXmlNodeModelIndex::DocumentOrder QDomNodeModel::compareOrder (
-    const QXmlNodeModelIndex & ni1,
-    const QXmlNodeModelIndex & ni2 ) const
+QXmlNodeModelIndex::DocumentOrder QDomNodeModel::compareOrder(
+    const QXmlNodeModelIndex &ni1,
+    const QXmlNodeModelIndex &ni2) const
 {
     QDomNode n1 = toDomNode(ni1);
     QDomNode n2 = toDomNode(ni2);
 
-    if (n1 == n2)
+    if (n1 == n2) {
         return QXmlNodeModelIndex::Is;
+    }
 
-    if (m_ReadOnly)
-    {
+    if (m_ReadOnly) {
         int i1 = n1.lineNumber();
         int i2 = n2.lineNumber();
 
-        if (i1 < i2)
+        if (i1 < i2) {
             return QXmlNodeModelIndex::Precedes;
+        }
 
-        if (i1 > i2)
+        if (i1 > i2) {
             return QXmlNodeModelIndex::Follows;
+        }
 
         i1 = n1.columnNumber();
         i2 = n2.columnNumber();
 
-        if (i1 < i2)
+        if (i1 < i2) {
             return QXmlNodeModelIndex::Precedes;
+        }
 
-        if (i1 > i2)
+        if (i1 > i2) {
             return QXmlNodeModelIndex::Follows;
+        }
 
         return QXmlNodeModelIndex::Is;
     }
@@ -102,21 +105,21 @@ QXmlNodeModelIndex::DocumentOrder QDomNodeModel::compareOrder (
     QVector<QDomNode> p1(path(n1));
     QVector<QDomNode> p2(path(n2));
 
-    if (p1.at(0) != p2.at(0))
+    if (p1.at(0) != p2.at(0)) {
         return QXmlNodeModelIndex::Is; // When root is not common, return obvious nonsense
+    }
 
     int s = p1.size() < p2.size() ? p1.size() : p2.size();
-    for (int i = 1; i < s; ++i)
-    {
-        if (p1.at(i) != p2.at(i))
-        {
+    for (int i = 1; i < s; ++i) {
+        if (p1.at(i) != p2.at(i)) {
             QDomNode c = p1.at(i - 1).firstChild();
-            while (!c.isNull())
-            {
-                if (c == p1.at(i))
+            while (!c.isNull()) {
+                if (c == p1.at(i)) {
                     return QXmlNodeModelIndex::Precedes;
-                if (c == p2.at(i))
+                }
+                if (c == p2.at(i)) {
                     return QXmlNodeModelIndex::Follows;
+                }
 
                 c = c.nextSibling();
             }
@@ -128,76 +131,90 @@ QXmlNodeModelIndex::DocumentOrder QDomNodeModel::compareOrder (
     return QXmlNodeModelIndex::Is; // Should be impossible!
 }
 
-QUrl QDomNodeModel::documentUri (const QXmlNodeModelIndex&) const
+QUrl QDomNodeModel::documentUri(const QXmlNodeModelIndex &) const
 {
     // TODO: Not implemented.
     return QUrl();
 }
 
-QXmlNodeModelIndex QDomNodeModel::elementById ( const QXmlName & id ) const
+QXmlNodeModelIndex QDomNodeModel::elementById(const QXmlName &id) const
 {
     return fromDomNode(m_Doc.elementById(id.toClarkName(m_Pool)));
 }
 
-QXmlNodeModelIndex::NodeKind QDomNodeModel::kind ( const QXmlNodeModelIndex & ni ) const
+QXmlNodeModelIndex::NodeKind QDomNodeModel::kind(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
-    if (n.isAttr())
+    if (n.isAttr()) {
         return QXmlNodeModelIndex::Attribute;
-    else if (n.isText())
+    }
+    else if (n.isText()) {
         return QXmlNodeModelIndex::Text;
-    else if (n.isComment())
+    }
+    else if (n.isComment()) {
         return QXmlNodeModelIndex::Comment;
-    else if (n.isDocument())
+    }
+    else if (n.isDocument()) {
         return QXmlNodeModelIndex::Document;
-    else if (n.isElement())
+    }
+    else if (n.isElement()) {
         return QXmlNodeModelIndex::Element;
-    else if (n.isProcessingInstruction())
+    }
+    else if (n.isProcessingInstruction()) {
         return QXmlNodeModelIndex::ProcessingInstruction;
+    }
 
-    return (QXmlNodeModelIndex::NodeKind) 0;
+    return static_cast<QXmlNodeModelIndex::NodeKind>(0);
 }
 
-QXmlName QDomNodeModel::name ( const QXmlNodeModelIndex & ni ) const
+QXmlName QDomNodeModel::name(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
 
     if (n.isAttr() || n.isElement()) {
-        if (!n.namespaceURI().isEmpty())
+        if (!n.namespaceURI().isEmpty()) {
             return QXmlName(m_Pool, n.localName(), n.namespaceURI(), n.prefix());
+        }
 
         QString p = n.prefix();
         QString t = n.nodeName();
 
-        if (p.isEmpty())
-        {
+        if (p.isEmpty()) {
             int c = t.indexOf(QLatin1Char(':'));
-            if (c < 0)
+            if (c < 0) {
                 p = QString::fromUtf8("");
-            else
-            {
+            }
+            else {
                 p = t.left(c);
                 t = t.mid(c + 1);
             }
         }
 
-        QVector<QXmlName> ns(namespaceBindings(ni));
-        int x;
-        for (x = 0; x < ns.size(); ++x)
-            if (ns.at(x).prefix(m_Pool) == p) break;
+        // STANDARD: Namespaces in XML 1.0 - Namespace Defaulting
+        // https://www.w3.org/TR/xml-names/#defaulting
+        // "The namespace name for an unprefixed attribute name always has no value."
+        if (n.isAttr() && p.isEmpty()) {
+            return QXmlName(m_Pool, t, QString::fromUtf8(""), p);
+        }
 
-        if (x < ns.size())
-            return QXmlName(m_Pool, t, ns.at(x).namespaceUri(m_Pool), p);
+        QVector<QXmlName> ns(namespaceBindings(ni));
+        for (int i = 0; i < ns.size(); ++i) {
+            if (ns.at(i).prefix(m_Pool) == p) {
+                return QXmlName(m_Pool, t, ns.at(i).namespaceUri(m_Pool), p);
+            }
+         }
+
+        return QXmlName(m_Pool, n.nodeName(), QString(), p);
     }
 
     return QXmlName(m_Pool, n.nodeName(), QString(), QString());
 }
 
-QVector<QXmlName> QDomNodeModel::namespaceBindings(const QXmlNodeModelIndex & ni ) const
+QVector<QXmlName> QDomNodeModel::namespaceBindings(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
 
-    QVector<QXmlName> res;
+    QVector<QXmlName> result;
     while (!n.isNull())
     {
         QDomNamedNodeMap attrs = n.attributes();
@@ -206,140 +223,144 @@ QVector<QXmlName> QDomNodeModel::namespaceBindings(const QXmlNodeModelIndex & ni
             QString a = attrs.item(i).nodeName();
 
             QString p;
-            if (a == QString::fromUtf8("xmlns"))
+            if (a == QString::fromUtf8("xmlns")) {
                 p = QString::fromUtf8("");
-            else if (a.startsWith(QString::fromUtf8("xmlns:")))
+            }
+            else if (a.startsWith(QString::fromUtf8("xmlns:"))) {
                 p = a.mid(6);
+            }
 
-            if (!p.isNull())
-            {
-                int x;
-                for (x = 0; x < res.size(); ++x)
-                    if (res.at(x).prefix(m_Pool) == p) break;
+            if (!p.isNull()) {
+                int j;
+                for (j = 0; j < result.size(); ++j) {
+                    if (result.at(j).prefix(m_Pool) == p) break;
+                }
 
-                if (x >= res.size())
-                    res.append(QXmlName(m_Pool, QString::fromUtf8("xmlns"), attrs.item(i).nodeValue(), p));
+                if (j >= result.size()) {
+                    result.append(QXmlName(m_Pool, QString::fromUtf8("xmlns"), attrs.item(i).nodeValue(), p));
+                }
              }
         }
 
         n = n.parentNode();
     }
 
-    return res;
+    return result;
 }
 
-QVector<QXmlNodeModelIndex> QDomNodeModel::nodesByIdref(const QXmlName&) const
+QVector<QXmlNodeModelIndex> QDomNodeModel::nodesByIdref(const QXmlName &) const
 {
     // TODO: Not implemented.
     return QVector<QXmlNodeModelIndex>();
 }
 
-QXmlNodeModelIndex QDomNodeModel::root ( const QXmlNodeModelIndex & ni ) const
+QXmlNodeModelIndex QDomNodeModel::root(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
-    while (!n.parentNode().isNull())
+    while (!n.parentNode().isNull()) {
         n = n.parentNode();
+    }
 
     return fromDomNode(n);
 }
 
-QSourceLocation    QDomNodeModel::sourceLocation(const QXmlNodeModelIndex&) const
-{
-    // TODO: Not implemented.
-    return QSourceLocation();
-}
-
-QString    QDomNodeModel::stringValue ( const QXmlNodeModelIndex & ni ) const
+QString QDomNodeModel::stringValue(const QXmlNodeModelIndex &ni) const
 {
     QDomNode n = toDomNode(ni);
 
-    if (n.isProcessingInstruction())
+    if (n.isProcessingInstruction()) {
         return n.toProcessingInstruction().data();
-    else if (n.isText())
+    }
+    else if (n.isText()) {
         return n.toText().data();
-    else if (n.isComment())
+    }
+    else if (n.isComment()) {
         return n.toComment().data();
-    else if (n.isElement())
+    }
+    else if (n.isElement()) {
         return n.toElement().text();
-    else if (n.isDocument())
+    }
+    else if (n.isDocument()) {
         return n.toDocument().documentElement().text();
-    else if (n.isAttr())
+    }
+    else if (n.isAttr()) {
         return n.toAttr().value();
+    }
 
     return QString();
 }
 
-QVariant QDomNodeModel::typedValue ( const QXmlNodeModelIndex & ni ) const
+QVariant QDomNodeModel::typedValue(const QXmlNodeModelIndex &ni) const
 {
-    return qVariantFromValue(stringValue(ni));
+    return QVariant::fromValue(stringValue(ni));
 }
 
 QXmlNodeModelIndex QDomNodeModel::fromDomNode(const QDomNode &n) const
 {
-    if (n.isNull())
+    if (n.isNull()) {
         return QXmlNodeModelIndex();
+    }
 
     return createIndex(PrivateDomNodeWrapper(n).getImpl(), 0);
 }
 
 QDomNode QDomNodeModel::toDomNode(const QXmlNodeModelIndex &ni) const
 {
-    return PrivateDomNodeWrapper((QDomNodePrivate*) ni.data());
+    return PrivateDomNodeWrapper(reinterpret_cast<QDomNodePrivate *>(ni.data()));
 }
 
 QVector<QDomNode> QDomNodeModel::path(const QDomNode &n) const
 {
-    QVector<QDomNode> res;
-    QDomNode cur = n;
-    while (!cur.isNull())
-    {
-        res.push_back(cur);
-        cur = cur.parentNode();
+    QVector<QDomNode> result;
+
+    QDomNode current = n;
+    while (!current.isNull()) {
+        result.push_back(current);
+        current = current.parentNode();
     }
 
-    std::reverse(res.begin(), res.end());
-    return res;
+    std::reverse(result.begin(), result.end());
+    return result;
 }
 
 int QDomNodeModel::childIndex(const QDomNode &n) const
 {
     QDomNodeList children = n.parentNode().childNodes();
-    for (int i = 0; i < children.size(); i++)
-        if (children.at(i) == n)
+    for (int i = 0; i < children.size(); ++i) {
+        if (children.at(i) == n) {
             return i;
+        }
+    }
 
     return -1;
 }
 
-QVector<QXmlNodeModelIndex> QDomNodeModel::attributes ( const QXmlNodeModelIndex & ni ) const
+QVector<QXmlNodeModelIndex> QDomNodeModel::attributes(const QXmlNodeModelIndex &element) const
 {
-    QDomElement n = toDomNode(ni).toElement();
+    QDomElement n = toDomNode(element).toElement();
     QDomNamedNodeMap attrs = n.attributes();
-    QVector<QXmlNodeModelIndex> res;
-    for (int i = 0; i < attrs.size(); i++)
-    {
-        res.push_back(fromDomNode(attrs.item(i)));
+
+    QVector<QXmlNodeModelIndex> result;
+    for (int i = 0; i < attrs.size(); ++i) {
+        result.push_back(fromDomNode(attrs.item(i)));
     }
-    return res;
+
+    return result;
 }
 
-QXmlNodeModelIndex QDomNodeModel::nextFromSimpleAxis ( SimpleAxis axis, const QXmlNodeModelIndex & ni) const
+QXmlNodeModelIndex QDomNodeModel::nextFromSimpleAxis(SimpleAxis axis, const QXmlNodeModelIndex &origin) const
 {
-    QDomNode n = toDomNode(ni);
-    switch(axis)
-    {
-    case Parent:
-        return fromDomNode(n.parentNode());
-
-    case FirstChild:
-        return fromDomNode(n.firstChild());
-
-    case PreviousSibling:
-        return fromDomNode(n.previousSibling());
-
-    case NextSibling:
-        return fromDomNode(n.nextSibling());
+    QDomNode n = toDomNode(origin);
+    switch(axis) {
+        case Parent:
+            return fromDomNode(n.parentNode());
+        case FirstChild:
+            return fromDomNode(n.firstChild());
+        case PreviousSibling:
+            return fromDomNode(n.previousSibling());
+        case NextSibling:
+            return fromDomNode(n.nextSibling());
+        default:
+            return QXmlNodeModelIndex();
     }
-
-    return QXmlNodeModelIndex();
 }
